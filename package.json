@@ -1,0 +1,19 @@
+{
+  "name": "pi-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A browser-first research and personal-assistant workspace for pi.",
+  "license": "MIT",
+  "keywords": ["pi-package", "assistant", "browser"],
+  "engines": { "node": ">=22" },
+  "pi": { "extensions": ["./src/index.ts"] },
+  "scripts": {
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "scripts/typecheck.sh"
+  },
+  "dependencies": { "proper-lockfile": "^4.1.2" },
+  "devDependencies": { "@types/node": "^24.0.0", "@types/proper-lockfile": "^4.1.4", "tsx": "^4.20.0", "typescript": "^5.9.0" },
+  "peerDependencies": { "@earendil-works/pi-coding-agent": "*" },
+  "peerDependenciesMeta": { "@earendil-works/pi-coding-agent": { "optional": true } }
+}
