@@ -40,6 +40,19 @@ test("real extension factories register without launching and compose current-ta
   devtools(browser.pi); // registration alone must not connect or launch
   for (const tool of browser.tools.values()) assert.equal(tool.executionMode, "sequential");
   assert.ok(browser.tools.get("browser_tabs").parameters.properties.id);
+  const devtoolsCapabilities: any = {};
+  browser.pi.events.emit("pi-devtools:capabilities:v1", devtoolsCapabilities);
+  assert.equal(devtoolsCapabilities.result.managedStop, true);
+  const previousAutoLaunch = process.env.PI_DEVTOOLS_AUTO_LAUNCH;
+  try {
+    process.env.PI_DEVTOOLS_AUTO_LAUNCH = "0";
+    const stop: any = { operation: "stop" };
+    browser.pi.events.emit("pi-devtools:runtime:v1", stop);
+    await assert.rejects(stop.result, /requires local managed mode/);
+  } finally {
+    if (previousAutoLaunch === undefined) delete process.env.PI_DEVTOOLS_AUTO_LAUNCH;
+    else process.env.PI_DEVTOOLS_AUTO_LAUNCH = previousAutoLaunch;
+  }
 
   const combined = harness();
   combined.tools.set("browser_dom", { name: "browser_dom" });

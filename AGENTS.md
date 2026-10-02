@@ -5,15 +5,21 @@ and browser-fetch. Keep browser capabilities in those projects; do not duplicate
 or register competing tools here. Read README.md before making changes.
 
 - `src/config.ts`: validated `.pi/assistant.json`, environment integration and restoration.
-- `src/gateway.ts`: local detached, authenticated browser-fetch lifecycle; cross-process lock.
+- `src/gateway.ts`: local detached gateway lifecycle; start/stop/restart share a lock.
+  Shutdown signals only a freshly authenticated PID; no stale-PID kills or escalation.
+  Restart runs the configured binary, never builds/downloads, and retains Chrome.
 - `src/external.ts`: authenticated remote service/capability checks. External mode
   never launches processes, creates credentials, or assumes local profile files.
-- `src/index.ts`: session hooks, assistant prompt, `/assistant` commands.
+- `src/index.ts`: session hooks, assistant prompt, mode-aware `/assistant` completions.
+  Start/stop/restart are local-only; check devtools managedStop support before stop.
+  Confirm shared-service impact when UI is available. External mode exposes status/show.
 - `src/assistant.md`: always-on behavioral instructions, not an optional skill.
 - Inter-extension calls use documented versioned pi.events channels, not private imports.
 - Never start sockets/processes in the extension factory. Launch only on browser use.
 - One profile/endpoint across pi processes; each conversation owns disposable tabs.
-- Never terminate shared services on pi exit. Never adopt an unverified listener.
+- Never terminate shared services on pi exit. Only explicit local commands may stop
+  them; stop is not a persistent pause. Never adopt or terminate an unverified listener.
+  Browser shutdown belongs in pi-devtools, accessed through its versioned event API.
 - Credentials, runtime logs and profile data stay outside the repo, owner-readable.
 - External mode derives all agent interfaces from one gateway URL. Never compare
   its proxied CDP URL to the server's internal Chrome URL. History uses the remote

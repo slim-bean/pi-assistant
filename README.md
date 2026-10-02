@@ -30,9 +30,11 @@ Local-managed mode is the default; existing configurations remain valid. In this
 
 ## Local installation
 
-Requires Node 22+, Chrome, and a built browser-fetch binary. Updated local checkouts
-of all four projects are required for the integration channels and runtime identity.
-Install dependencies in pi-assistant, pi-devtools and pi-search (`npm install`).
+Requires Node 22+, Chrome, and a built browser-fetch binary. Install current versions
+of all four projects for the integration channels and runtime identity. Managed stop
+requires pi-devtools's `managedStop` capability (not present in v0.2.0).
+For local checkouts, install dependencies in pi-assistant, pi-devtools and pi-search
+(`npm install`).
 
 ```bash
 cd ~/projects/browser-fetch
@@ -71,9 +73,39 @@ until needed. Project trust must permit loading the package.
 
 ```
 /assistant status     # configuration, verified endpoints, history and tool availability
-/assistant start      # optional background launch of Chrome and gateway
 /assistant show       # explicitly bring Chrome forward (human handoff)
+/assistant start      # local only: background launch of Chrome and gateway
+/assistant stop       # local only: stop shared gateway AND Chrome; retain the profile
+/assistant restart    # local only: restart gateway from its binary; keep Chrome/tabs
 ```
+
+Tab completion lists only the actions available in the current mode. Stop/restart
+ask for confirmation when an interactive UI is available: they affect **all conversations**
+sharing these services. If this session has an active turn, they wait for it to finish;
+the success notification marks completion, not merely submitting the command.
+Stop loses tabs/unsaved page state; restart can interrupt
+in-flight fetches but preserves interactive tabs. Pause other browser work first.
+Stop is not a persistent pause: the next browser operation (including one from another
+conversation) can launch the services again. Neither command runs on pi shutdown.
+Unverified services are never terminated; shutdown failures are reported without a
+force-kill. Local stop is safe to repeat and does not launch anything.
+
+### Updating the local gateway
+
+pi-assistant runs the configured `gatewayBinary`; it does not download, build, or
+watch source changes. Build/install the desired binary explicitly, then run
+`/assistant restart` to use it without closing Chrome. For a local checkout:
+
+```bash
+cd ~/projects/browser-fetch
+go build -o bin/browser-fetch.new . && mv bin/browser-fetch.new bin/browser-fetch
+# Back in pi: /assistant restart
+```
+
+`/assistant status` shows the executable path. Restart checks that it is executable
+before stopping the old gateway. A successful rebuild or `/reload` alone does **not**
+replace a running gateway. If you want to restart Chrome too, use `/assistant stop`
+followed by `/assistant start`; tabs are not restored.
 
 You can log into sites in the assistant Chrome window. No passwords or cookies
 need to be passed to pi. Human login/MFA/challenge assistance remains interactive.
@@ -109,8 +141,10 @@ External mode:
   bounded Chromium records.
 - Never starts local Chrome/gateway, creates a token, or mounts/discovers the remote
   profile locally. No local fallback when the remote service is unavailable.
-- `/assistant start` checks readiness, not Kubernetes lifecycle. `/assistant show`
-  selects/restores a remote tab and prints `humanUrl`; it doesn't open a local browser.
+- Only `/assistant status` and `/assistant show` are available. `show` selects/restores
+  a remote tab and prints `humanUrl`; it doesn't open a local browser. Local lifecycle
+  commands (`start`, `stop`, `restart`) are hidden from completion and rejected if typed.
+  The external operator owns builds, deployment, startup and shutdown.
 - `browser_history` searches only the remote profile sources; it does not silently
   search the agent container or your laptop. No human viewer URL is required for tools.
 - Requires updated pi-devtools, pi-search, pi-browser and browser-fetch. Capabilities
@@ -139,11 +173,14 @@ and restores them on shutdown/reload; it does not rewrite global pi settings:
 - pi-browser: adds `{browser, dir}` to `PI_BROWSER_HISTORY_CHROMIUM_ROOTS` (JSON array).
 
 Pi event bus channel `pi-devtools:runtime:v1` accepts
-`{operation: "ensure" | "status" | "focus", result?: Promise<unknown>}`. The responder sets
+`{operation: "ensure" | "status" | "focus" | "stop", result?: Promise<unknown>}`. The responder sets
 `result` synchronously. Missing responder = incompatible/missing pi-devtools.
 `ensure` launches only with managed auto-launch enabled, otherwise checks the
 external endpoint without launching. `status` probes without launching; `focus`
-is an explicit human handoff. pi-search advertises browser-only
+is an explicit human handoff. `stop` closes only a verified local managed Chrome,
+without launching. `pi-devtools:capabilities:v1` advertises `{managedStop: true}`;
+pi-assistant checks this before stopping either service, so older devtools versions
+fail with update advice rather than a partial shutdown. pi-search advertises browser-only
 support via `pi-search:capabilities:v1`; a missing capability blocks web_fetch.
 pi-browser advertises remote history and `historyProtocol: 2` via
 `pi-browser:capabilities:v1`. pi-search
@@ -156,7 +193,8 @@ the server's internal `chrome_url` with the client-facing proxy URL.
 
 browser-fetch's authenticated `GET /runtime` identifies the service and capabilities.
 In local mode it also checks the configured Chrome endpoint. Gateway tokens/logs are under `<profile>/.pi-assistant/`, with
-owner-only permissions. Cross-process heartbeat locks serialize startup. A crashed
+owner-only permissions. Cross-process heartbeat locks serialize gateway start/stop/restart
+and Chrome launch/stop within their respective lifecycle owners. A crashed
 launcher's lock can take about a minute to expire. No watchdog immediately undoes
 a manual browser close; reopening occurs only on the next browser operation.
 
@@ -188,5 +226,6 @@ npx tsx test/live.ts  # launches temporary-profile Chrome and a gateway; cleans 
 ```
 
 The live test uses separate ports and synthetic pages, exercises concurrent pi-like
-clients and browser restart, and never inspects personal history/accounts. It needs
+clients, gateway replacement, explicit shutdown/relaunch, browser restart, and
+stale-worker recovery without action replay. It never inspects personal history/accounts. It needs
 the adjacent local checkouts and built browser-fetch binary. No model calls.
