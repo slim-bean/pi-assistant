@@ -32,7 +32,7 @@ Local-managed mode is the default; existing configurations remain valid. In this
 
 Requires Node 22+, Chrome, and a built browser-fetch binary. Install current versions
 of all four projects for the integration channels and runtime identity. Managed stop
-requires pi-devtools's `managedStop` capability (not present in v0.2.0).
+requires pi-devtools v0.3.0+ (`managedStop` capability).
 For local checkouts, install dependencies in pi-assistant, pi-devtools and pi-search
 (`npm install`).
 
