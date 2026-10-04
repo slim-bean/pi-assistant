@@ -13,6 +13,7 @@ or register competing tools here. Read README.md before making changes.
 - `src/index.ts`: session hooks, assistant prompt, mode-aware `/assistant` completions.
   Start/stop/restart are local-only; check devtools managedStop support before stop.
   Confirm shared-service impact when UI is available. External mode exposes status/show.
+  Footer is a terse emoji-led configuration block (`🌐 :port brw`), not a connectivity probe.
 - `src/assistant.md`: always-on behavioral instructions, not an optional skill.
 - Inter-extension calls use documented versioned pi.events channels, not private imports.
 - Never start sockets/processes in the extension factory. Launch only on browser use.

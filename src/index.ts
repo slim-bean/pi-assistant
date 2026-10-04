@@ -67,11 +67,11 @@ export default function assistant(pi: ExtensionAPI): void {
       const names = new Set(pi.getAllTools().map((t) => t.name));
       const missing = requiredTools.filter((name) => !names.has(name));
       if (missing.length) ctx.ui.notify(`Assistant: missing tools: ${missing.join(", ")}. See pi-assistant/README.md.`, "warning");
-      ctx.ui.setStatus("assistant", `assistant · ${config.mode === "external" ? "external browser" : `Chrome :${config.cdpPort}`} · browser-only reads`);
+      ctx.ui.setStatus("assistant", `🌐 ${config.mode === "external" ? "remote" : `:${config.cdpPort}`} brw`);
     } catch (error) {
       setupError = (error as Error).message; config = undefined;
       ctx.ui.notify(`Assistant setup error: ${setupError}`, "error");
-      ctx.ui.setStatus("assistant", "assistant · configuration error");
+      ctx.ui.setStatus("assistant", "🌐 cfg!");
     }
   });
 

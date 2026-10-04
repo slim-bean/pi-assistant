@@ -40,8 +40,10 @@ test("external mode configures all clients without local launch/profile discover
         if(channel==="pi-browser:capabilities:v1") data.result={remoteHistory:true,historyProtocol:2};
       } },
     };
-    const ctx = {cwd:dir,ui:{notify(){},setStatus(){}}};
+    let footer: string | undefined;
+    const ctx = {cwd:dir,ui:{notify(){},setStatus(key: string, value: string){ if (key === "assistant") footer = value; }}};
     assistant(pi as any); handlers.get("session_start")!({},ctx);
+    assert.equal(footer, "🌐 remote brw");
     assert.deepEqual(calls,[]); // no eager network/processes
     for(const toolName of ["web_fetch","browser_navigate","browser_history"]) {
       assert.equal(await handlers.get("tool_call")!({toolName},ctx),undefined);

@@ -34,7 +34,10 @@ test("real extension factories register without launching and compose current-ta
   const standalone = harness();
   search(standalone.pi);
   await standalone.start();
-  assert.deepEqual([...standalone.tools.keys()], ["web_search", "web_fetch"]);
+  assert.ok(standalone.tools.has("web_search"));
+  assert.ok(standalone.tools.has("web_fetch"));
+  assert.equal(standalone.tools.has("browser_read"), false); // current-tab reading requires devtools
+  // Reader-only additions (such as web_fetch_screenshot) are compatible.
 
   const browser = harness();
   devtools(browser.pi); // registration alone must not connect or launch

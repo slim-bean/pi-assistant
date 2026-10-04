@@ -28,6 +28,14 @@ Local-managed mode is the default; existing configurations remain valid. In this
 - Browser history includes a separately labeled `assistant` source, alongside
   ordinary browser profiles. Existing conversation/memory tools retain decisions.
 
+### Compact footer
+
+`🌐 :19322 brw` identifies the assistant browser configuration (`brw` = browser-only
+page reads). External mode shows `🌐 remote brw`; invalid config shows `🌐 cfg!`.
+This is configuration, not a live connectivity assertion; `/assistant status`
+provides the detailed checks. The emoji marks the extension's block without
+ambiguous internal dot separators.
+
 ## Local installation
 
 Requires Node 22+, Chrome, and a built browser-fetch binary. Install current versions

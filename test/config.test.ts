@@ -40,17 +40,19 @@ test("extension is lazy, injects standing instructions, fails closed, and restor
   const before = process.env.PI_SEARCH_FETCH_MODE;
   const handlers = new Map<string, Function>();
   const emitted: string[] = [];
+  const statuses = new Map<string, string>();
   const pi = {
     on: (name: string, handler: Function) => handlers.set(name, handler),
     registerCommand: () => {}, getAllTools: () => [],
     events: { emit: (channel: string) => emitted.push(channel) },
   };
-  const ctx = { cwd: dir, ui: { notify() {}, setStatus() {} } };
+  const ctx = { cwd: dir, ui: { notify() {}, setStatus(key: string, value: string) { statuses.set(key, value); } } };
   try {
     assistant(pi as any);
     assert.deepEqual(emitted, []);
     handlers.get("session_start")!({}, ctx);
     assert.deepEqual(emitted, []);
+    assert.equal(statuses.get("assistant"), "🌐 :19322 brw");
     const event = { systemPromptOptions: { sections: {} as Record<string, string> } };
     handlers.get("before_agent_start")!(event);
     assert.match(event.systemPromptOptions.sections.assistant, /primary role here is a research partner/);
@@ -63,6 +65,10 @@ test("extension is lazy, injects standing instructions, fails closed, and restor
     const navigation = await handlers.get("tool_call")!({ toolName: "browser_navigate" }, ctx);
     assert.equal(navigation.block, true);
     assert.match(navigation.reason, /updated pi-devtools/);
+    mkdirSync(join(dir, ".pi"));
+    writeFileSync(join(dir, ".pi", "assistant.json"), '{"cdpPort":1}');
+    handlers.get("session_start")!({}, ctx);
+    assert.equal(statuses.get("assistant"), "🌐 cfg!");
   } finally {
     handlers.get("session_shutdown")!();
     assert.equal(process.env.PI_SEARCH_FETCH_MODE, before);
