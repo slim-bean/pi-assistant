@@ -45,16 +45,16 @@ For local checkouts, install dependencies in pi-assistant, pi-devtools and pi-se
 (`npm install`).
 
 ```bash
-cd ~/projects/browser-fetch
+cd ~/projects/pi-extensions/browser-fetch
 mkdir -p bin
 go build -o bin/browser-fetch .
 
 cd ~/projects/discussions/general
 # Install components only if not already loaded globally (never load two copies).
-pi install -l ~/projects/pi-devtools
-pi install -l ~/projects/pi-search
-pi install -l ~/projects/pi-browser
-pi install -l ~/projects/pi-assistant
+pi install -l ~/projects/pi-extensions/pi-devtools
+pi install -l ~/projects/pi-extensions/pi-search
+pi install -l ~/projects/pi-extensions/pi-browser
+pi install -l ~/projects/pi-extensions/pi-assistant
 ```
 
 If pi-search is already loaded as an explicit extension file, keep that mechanism
@@ -67,7 +67,7 @@ Add `.pi/assistant.json` in the **working directory**:
   "profile": "~/.local/share/pi-assistant/chrome-profile",
   "cdpPort": 19322,
   "gatewayPort": 19377,
-  "gatewayBinary": "~/projects/browser-fetch/bin/browser-fetch",
+  "gatewayBinary": "~/projects/pi-extensions/browser-fetch/bin/browser-fetch",
   "historySource": "assistant"
 }
 ```
@@ -105,7 +105,7 @@ watch source changes. Build/install the desired binary explicitly, then run
 `/assistant restart` to use it without closing Chrome. For a local checkout:
 
 ```bash
-cd ~/projects/browser-fetch
+cd ~/projects/pi-extensions/browser-fetch
 go build -o bin/browser-fetch.new . && mv bin/browser-fetch.new bin/browser-fetch
 # Back in pi: /assistant restart
 ```
