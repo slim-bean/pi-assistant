@@ -16,7 +16,6 @@ cat > "$TMP" <<EOF
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@earendil-works/pi-coding-agent": ["$PI_ROOT/dist/index.d.ts"],
       "@earendil-works/pi-ai": ["$PI_ROOT/node_modules/@earendil-works/pi-ai/dist/index.d.ts"],
