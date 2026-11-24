@@ -114,7 +114,7 @@ export default function assistant(pi: ExtensionAPI): void {
   pi.registerCommand("assistant", {
     description: "Assistant workspace controls (Tab for available actions)",
     getArgumentCompletions(prefix) {
-      const matches = actions().filter((action) => action.value.startsWith(prefix));
+      const matches = actions().filter((action) => action.value.startsWith(prefix.trimStart()));
       return matches.length ? matches : null;
     },
     async handler(args, ctx) {
